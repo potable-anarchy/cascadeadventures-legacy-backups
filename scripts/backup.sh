@@ -25,11 +25,15 @@ for db in "${DATABASES[@]}"; do
         if [ $? -eq 0 ]; then
             echo "Successfully backed up $db as $backup_name"
             
-            # Verify the backup
-            if sqlite3 "$BACKUP_DIR/$backup_name" "PRAGMA integrity_check;" > /dev/null 2>&1; then
-                echo "Backup verification successful for $backup_name"
+            # Verify the backup (if sqlite3 is available)
+            if command -v sqlite3 >/dev/null 2>&1; then
+                if sqlite3 "$BACKUP_DIR/$backup_name" "PRAGMA integrity_check;" > /dev/null 2>&1; then
+                    echo "Backup verification successful for $backup_name"
+                else
+                    echo "WARNING: Backup verification failed for $backup_name"
+                fi
             else
-                echo "WARNING: Backup verification failed for $backup_name"
+                echo "Note: sqlite3 not available for verification, backup file copied successfully"
             fi
         else
             echo "ERROR: Failed to backup $db"

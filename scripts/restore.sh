@@ -55,13 +55,17 @@ echo "  Source: $BACKUP_FILE"
 echo "  Target: $TARGET_PATH"
 echo ""
 
-# Verify backup integrity
-echo "Verifying backup integrity..."
-if ! sqlite3 "$BACKUP_FILE" "PRAGMA integrity_check;" > /dev/null 2>&1; then
-    echo "ERROR: Backup file appears to be corrupted"
-    exit 1
+# Verify backup integrity (if sqlite3 is available)
+if command -v sqlite3 >/dev/null 2>&1; then
+    echo "Verifying backup integrity..."
+    if ! sqlite3 "$BACKUP_FILE" "PRAGMA integrity_check;" > /dev/null 2>&1; then
+        echo "ERROR: Backup file appears to be corrupted"
+        exit 1
+    fi
+    echo "Backup integrity check passed"
+else
+    echo "Note: sqlite3 not available for verification, proceeding with restore"
 fi
-echo "Backup integrity check passed"
 
 # Create backup of current file if it exists
 if [ -f "$TARGET_PATH" ]; then
